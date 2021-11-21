@@ -1,5 +1,6 @@
 # TablesGenerator
-Demo react app that allows filling and copying of table data
+Demo react app that allows filling and copying of table data.
+Application is based on Create React App and uses Typescript, CSS Modules, and React Hooks.
 
 # Notes
 * CSS Modules approach was used for styles. so BEM style is not really necessary,

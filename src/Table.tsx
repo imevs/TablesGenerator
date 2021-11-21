@@ -19,8 +19,10 @@ type TableProps = {
 export const DEFAULT_TABLE_INDEX = "0";
 
 export function Table(props: TableProps) {
-    const rowsCount = Math.max(Object.keys(props.data).length, 10);
-    const rowsRange = (new Array(rowsCount)).fill(0).map((v, i) => String(i));
+    const maxEmptyRows = 10;
+    const rowsRange = Object.keys(props.data);
+    const emptyRowsCount = Math.abs(maxEmptyRows - rowsRange.length);
+    const emptyRowsRange = (new Array(emptyRowsCount)).fill(0).map((v, i) => String(i));
     return <div className={styles.tableContainer}>
         <div className={styles.tableHeader}>
             <button
@@ -78,6 +80,7 @@ export function Table(props: TableProps) {
                         </>}
                     </td>
                 </tr>))}
+            {emptyRowsRange.map((rowId) => (<tr key={"empty" + rowId}><td /><td /><td /><td /><td /></tr>))}
             </tbody>
         </table>
     </div>;

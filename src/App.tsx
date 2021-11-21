@@ -1,11 +1,11 @@
 import React from "react";
 
 import { Person, TableRows } from "./commonTypes";
+import { FillingForm, PopupForm } from "./Form";
+import { mockedData } from "./mockedData";
+import { Table, DEFAULT_TABLE_INDEX } from "./Table";
 
 import styles from "./App.module.css";
-
-import { FillingForm, PopupForm } from "./Form";
-import { Table, DEFAULT_TABLE_INDEX } from "./Table";
 
 type AppState = {
     tables: Record<string, TableRows>;
@@ -31,7 +31,7 @@ export class App extends React.Component<{}, AppState> {
 
     private removeTimeoutIds: Record<string, number> = {};
     private popupRef = React.createRef<HTMLDivElement>();
-    private tableIds = [DEFAULT_TABLE_INDEX];
+    private tableIds: string[] = [DEFAULT_TABLE_INDEX];
 
     public copyTable = (tableIndex: string) => {
         const data = this.state.tables[tableIndex];
@@ -41,7 +41,7 @@ export class App extends React.Component<{}, AppState> {
     public genTableId(prevTableId: string) {
         const newId = Date.now().toString();
         const prevIndex = this.tableIds.indexOf(prevTableId);
-        this.tableIds.splice(prevIndex, 0, newId);
+        this.tableIds.splice(prevIndex + 1, 0, newId);
         return newId;
     }
 
@@ -120,7 +120,7 @@ export class App extends React.Component<{}, AppState> {
         const tables = this.state.tables;
         this.updateTablesData({
             ...tables,
-            [tableIndex]: { ...tables[tableIndex], [Object.keys(tables[tableIndex]).length]: data }
+            [tableIndex]: { ...tables[tableIndex], [Date.now()]: data }
         });
     }
 
@@ -158,6 +158,8 @@ export class App extends React.Component<{}, AppState> {
         try {
             if (positionsData !== null) {
                 this.tableIds = JSON.parse(positionsData) as string[]
+            } else {
+                this.tableIds = [DEFAULT_TABLE_INDEX, "1637496942500", "1637496971989", "1637496924975"];
             }
         } catch (e) {
             console.error(e, positionsData);
@@ -166,6 +168,8 @@ export class App extends React.Component<{}, AppState> {
         try {
             if (data !== null) {
                 this.setState({ tables: JSON.parse(data) as Record<string, TableRows> });
+            } else {
+                this.setState({ tables: mockedData });
             }
         } catch (e) {
             console.error(e, data);

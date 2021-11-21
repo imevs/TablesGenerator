@@ -51,7 +51,6 @@
 
 .tableContent td {
     border: 1px solid grey;
-    height: 1.3rem;
     overflow-wrap: break-word;
 }
 
@@ -61,6 +60,11 @@
     text-decoration: underline;
     cursor: pointer;
     padding: 0 0 0 1rem;
+}
+
+.tableContent tr {
+    height: 1.5rem;
+    transition: color;
 }
 
 .tableContent__row_selected {

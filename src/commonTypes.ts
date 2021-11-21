@@ -4,7 +4,7 @@ export type Person = {
     surname: string;
     age: number;
     city: string;
-    isRemoved: boolean;
+    isRemoved?: boolean;
 };
 
 export type TableRows = Record<string, Person>;
