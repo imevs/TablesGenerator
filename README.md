@@ -15,3 +15,7 @@ Removal of table's item does not require confirmation but it is possible to rest
 * CSS Modules approach was used for styles. so BEM style is not really necessary,
     and it was used just for demonstration only at Table component, in real application I would prefer shorter names.
 * BEM notation: blockName__elementName_modificator
+
+# Demo
+
+https://github.com/imevs/TablesGenerator/raw/main/data/Demo.move
