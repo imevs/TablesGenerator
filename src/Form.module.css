@@ -1,0 +1,52 @@
+.fillingForm {
+    width: 100%;
+    background: white;
+}
+
+.popup {
+    width: 40%;
+    background: white;
+    position: fixed;
+    top: 10rem;
+    left: 10rem;
+    border-radius: 1rem;
+    border: 1px solid grey;
+    box-shadow: 3px 3px 4px grey;
+    overflow: hidden;
+}
+
+@media (max-width: 1000px) {
+    .popup {
+        width: 80%;
+        left: 2rem;
+        top: 3rem;
+    }
+}
+
+.formElement {
+    width: 90%;
+    padding: 0;
+    margin: 1rem 5% 0 5%;
+}
+
+.confirmButton,
+.submitButton {
+    border: none;
+    border-radius: 1rem;
+    margin: 0 5% 1rem 5%;
+    width: 90%;
+    background: #2098fe;
+    color: white;
+    line-height: 200%;
+    cursor: pointer;
+}
+
+.confirmButton:disabled,
+.submitButton:disabled {
+    background: #c4cdd2;
+    cursor: default;
+}
+
+.confirmButton {
+    background: red;
+}

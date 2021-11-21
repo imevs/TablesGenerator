@@ -1,0 +1,90 @@
+.tableContainer {
+    width: 100%;
+}
+
+.tableHeader {
+    text-align: right;
+}
+
+.tableHeader__button_copy {
+    border: none;
+    border-radius: 3px;
+    margin: 1rem 0 0.5rem 0;
+    width: 10rem;
+    background: #2098fe;
+    color: white;
+    line-height: 200%;
+    cursor: pointer;
+}
+
+.tableHeader__button_copy:hover {
+    background: #175890;
+}
+
+.tableHeader__button_remove {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: #eb6560;
+    font-size: 120%;
+    vertical-align: middle;
+    transition: transform 0.2s;
+    margin: 0 0 0 1rem;
+}
+
+.tableHeader__button_remove:hover {
+    transform: scale(1.5);
+}
+
+.tableContent {
+    table-layout: fixed;
+    width: 100%;
+    border: 1px solid grey;
+    border-collapse: collapse;
+    background: white;
+}
+
+.tableContent__header {
+    background: #175890;
+    color: white;
+}
+
+.tableContent td {
+    border: 1px solid grey;
+    height: 1.3rem;
+    overflow-wrap: break-word;
+}
+
+.tableContent__link {
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0 0 0 1rem;
+}
+
+.tableContent__row_selected {
+    background: #2098fe;
+}
+
+.tableContent__row_removed {
+    text-decoration: line-through;
+    animation: rowRemovingKeyframes 2s forwards;
+}
+
+@keyframes rowRemovingKeyframes {
+    from {
+        color: rgb(0 0 0 / 100%);
+    }
+    to {
+        color: rgb(0 0 0 / 0%);
+    }
+}
+
+.tableContent__link_blue {
+    color: #069;
+}
+
+.tableContent__link_red {
+    color: red;
+}

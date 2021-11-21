@@ -1,0 +1,43 @@
+.App {
+    min-width: 25rem;
+}
+
+.TableWidget,
+.InputWidget {
+    float: left;
+    width: 40%;
+    margin: 0 5%;
+}
+
+.RemovingTable {
+    transition: opacity;
+    filter: blur(1px) grayscale(1);
+}
+
+.RemovedTable {
+    animation: removeTableKeyframe 1s forwards;
+}
+
+@keyframes removeTableKeyframe {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.InputWidget {
+    margin-top: 2.5rem;
+}
+
+@media (max-width: 1000px) {
+    .InputWidget {
+        margin-top: 0;
+    }
+
+    .TableWidget,
+    .InputWidget {
+        width: 90%;
+    }
+}
