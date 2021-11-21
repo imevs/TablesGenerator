@@ -1,6 +1,7 @@
 import { DEFAULT_TABLE_INDEX } from "./Table";
 import { TableRows } from "./commonTypes";
 
+export const mockedTablesPositions = [DEFAULT_TABLE_INDEX, "1637496942500", "1637496971989", "1637496924975"];
 export const mockedData: Record<string, TableRows> = {
     [DEFAULT_TABLE_INDEX]: {
         "0": {

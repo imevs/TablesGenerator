@@ -2,7 +2,7 @@ import React from "react";
 
 import { Person, TableRows } from "./commonTypes";
 import { FillingForm, PopupForm } from "./Form";
-import { mockedData } from "./mockedData";
+import { mockedData, mockedTablesPositions } from "./mockedData";
 import { Table, DEFAULT_TABLE_INDEX } from "./Table";
 
 import styles from "./App.module.css";
@@ -31,15 +31,19 @@ export class App extends React.Component<{}, AppState> {
 
     private removeTimeoutIds: Record<string, number> = {};
     private popupRef = React.createRef<HTMLDivElement>();
-    private tableIds: string[] = [DEFAULT_TABLE_INDEX];
+    public tableIds: string[] = [DEFAULT_TABLE_INDEX];
 
     public copyTable = (tableIndex: string) => {
         const data = this.state.tables[tableIndex];
         this.updateTablesData({ ...this.state.tables, [this.genTableId(tableIndex)]: data });
     }
 
+    public getUniqueString() {
+        return Date.now().toString();
+    }
+
     public genTableId(prevTableId: string) {
-        const newId = Date.now().toString();
+        const newId = this.getUniqueString();
         const prevIndex = this.tableIds.indexOf(prevTableId);
         this.tableIds.splice(prevIndex + 1, 0, newId);
         return newId;
@@ -120,7 +124,7 @@ export class App extends React.Component<{}, AppState> {
         const tables = this.state.tables;
         this.updateTablesData({
             ...tables,
-            [tableIndex]: { ...tables[tableIndex], [Date.now()]: data }
+            [tableIndex]: { ...tables[tableIndex], [this.getUniqueString()]: data }
         });
     }
 
@@ -159,7 +163,7 @@ export class App extends React.Component<{}, AppState> {
             if (positionsData !== null) {
                 this.tableIds = JSON.parse(positionsData) as string[]
             } else {
-                this.tableIds = [DEFAULT_TABLE_INDEX, "1637496942500", "1637496971989", "1637496924975"];
+                this.tableIds = [...mockedTablesPositions];
             }
         } catch (e) {
             console.error(e, positionsData);
