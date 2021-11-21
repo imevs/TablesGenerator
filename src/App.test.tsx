@@ -24,7 +24,6 @@ describe("App", () => {
         afterEach(() => {
             localStorage.removeItem("tablesData");
             localStorage.removeItem("tablesPositions");
-            app.tableIds = [];
         });
 
         it("should load default data", () => {
@@ -38,9 +37,9 @@ describe("App", () => {
         });
 
         it("should add new tableId after current", () => {
-            app.getUniqueString = () => "111";
-            app.genTableId("0");
-            expect(app.tableIds).toEqual(["0", "111",
+            app.store.getUniqueString = () => "111";
+            app.store.genTableId("0");
+            expect(app.store.tableIds).toEqual(["0", "111",
                 "1637496942500", "1637496971989", "1637496924975",
             ]);
         });
@@ -71,7 +70,7 @@ describe("App", () => {
         });
 
         it("should add new item", () => {
-            app.getUniqueString = () => "333";
+            app.store.getUniqueString = () => "333";
             app.addPerson({
                 name: "Ivan",
                 surname: "Petrov",

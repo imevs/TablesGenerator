@@ -3,7 +3,8 @@ import React from "react";
 import { Person, TableRows } from "./commonTypes";
 import { FillingForm, PopupForm } from "./Form";
 import { mockedData, mockedTablesPositions } from "./mockedData";
-import { Table, DEFAULT_TABLE_INDEX } from "./Table";
+import { Table } from "./Table";
+import { TablesStore } from "./TablesStore";
 
 import styles from "./App.module.css";
 
@@ -19,9 +20,7 @@ type AppState = {
 export class App extends React.Component<{}, AppState> {
 
     state: AppState = {
-        tables: {
-            [DEFAULT_TABLE_INDEX]: {},
-        },
+        tables: {},
         selectedPerson: undefined,
         selectedRow: undefined,
         selectedTable: undefined,
@@ -31,26 +30,10 @@ export class App extends React.Component<{}, AppState> {
 
     private removeTimeoutIds: Record<string, number> = {};
     private popupRef = React.createRef<HTMLDivElement>();
-    public tableIds: string[] = [DEFAULT_TABLE_INDEX];
+    public store = new TablesStore();
 
     public copyTable = (tableIndex: string) => {
-        const data = this.state.tables[tableIndex];
-        this.updateTablesData({ ...this.state.tables, [this.genTableId(tableIndex)]: data });
-    }
-
-    public getUniqueString() {
-        return Date.now().toString();
-    }
-
-    public genTableId(prevTableId: string) {
-        const newId = this.getUniqueString();
-        const prevIndex = this.tableIds.indexOf(prevTableId);
-        this.tableIds.splice(prevIndex + 1, 0, newId);
-        return newId;
-    }
-
-    public getTableIds() {
-        return this.tableIds.filter(id => this.state.tables[id] !== undefined);
+        this.store.copyTable(tableIndex);
     }
 
     public removeTable = (tableIndex: string) => {
@@ -60,9 +43,7 @@ export class App extends React.Component<{}, AppState> {
             if (window.confirm("You pressed 'remove' for table. Are you sure?")) {
                 this.setState({ removedTable: tableIndex });
                 setTimeout(() => {
-                    const tables = { ...this.state.tables };
-                    delete tables[tableIndex];
-                    this.updateTablesData(tables);
+                    this.store.removeTable(tableIndex);
                     this.setState({ removingTable: undefined, removedTable: undefined });
                 }, 1000);
             } else {
@@ -80,18 +61,10 @@ export class App extends React.Component<{}, AppState> {
     }
 
     public removeRow = (tableIndex: string, rowId: string) => {
-        const tables = this.state.tables;
-        const infoToUpdate = { ...tables[tableIndex][rowId] };
-        infoToUpdate.isRemoved = true;
-        this.updateTablesData({
-            ...tables, [tableIndex]: { ...tables[tableIndex], [rowId]: infoToUpdate }
-        });
+        this.store.markAsRemovedRow(tableIndex, rowId);
 
         this.removeTimeoutIds[tableIndex + "_" + rowId] = window.setTimeout(() => {
-            const tables = this.state.tables;
-            const tableToUpdate = { ...tables[tableIndex] };
-            delete tableToUpdate[rowId];
-            this.updateTablesData({ ...tables, [tableIndex]: { ...tableToUpdate } });
+            this.store.removeRow(tableIndex, rowId);
         }, 5000);
     }
 
@@ -99,39 +72,24 @@ export class App extends React.Component<{}, AppState> {
         window.clearInterval(this.removeTimeoutIds[tableIndex + "_" + rowId]);
         delete this.removeTimeoutIds[tableIndex + "_" + rowId];
 
-        const tables = this.state.tables;
-        const infoToUpdate = { ...tables[tableIndex][rowId] };
-        infoToUpdate.isRemoved = false;
-        this.updateTablesData({
-            ...tables, [tableIndex]: { ...tables[tableIndex], [rowId]: infoToUpdate }
-        });
+        this.store.cancelRemovingRow(tableIndex, rowId);
     }
 
     public updatePersonInfo = (data: Person) => {
-        const tables = this.state.tables;
-        const tableIndex = this.state.selectedTable;
-        const rowId = this.state.selectedRow
-        if (tableIndex && rowId) {
-            this.updateTablesData({
-                ...tables, [tableIndex]: { ...tables[tableIndex], [rowId]: data }
-            });
+        if (this.state.selectedTable && this.state.selectedRow) {
+            this.store.updatePersonInfo(data, this.state.selectedTable, this.state.selectedRow);
             this.clearCurrent();
         }
     }
 
     public addPerson = (data: Person) => {
-        const tableIndex = "0";
-        const tables = this.state.tables;
-        this.updateTablesData({
-            ...tables,
-            [tableIndex]: { ...tables[tableIndex], [this.getUniqueString()]: data }
-        });
+        this.store.addPerson(data);
     }
 
-    public updateTablesData(data: Record<string, TableRows>) {
+    public updateTablesData(data: Record<string, TableRows>, tableIds: string[]) {
         this.setState({ tables: data });
         localStorage.setItem("tablesData", JSON.stringify(data));
-        localStorage.setItem("tablesPositions", JSON.stringify(this.tableIds));
+        localStorage.setItem("tablesPositions", JSON.stringify(tableIds));
     }
 
     public handleClickOutsideOfPopup = (event: MouseEvent) => {
@@ -158,12 +116,16 @@ export class App extends React.Component<{}, AppState> {
         document.addEventListener("click", this.handleClickOutsideOfPopup, true);
         document.addEventListener("keyup", this.handleEscape, true);
 
+        this.store.subscribe((data, tablePositions) => {
+            this.updateTablesData(data, tablePositions);
+        });
+
         const positionsData = localStorage.getItem("tablesPositions");
         try {
             if (positionsData !== null) {
-                this.tableIds = JSON.parse(positionsData) as string[]
+                this.store.tableIds = JSON.parse(positionsData) as string[]
             } else {
-                this.tableIds = [...mockedTablesPositions];
+                this.store.tableIds = [...mockedTablesPositions];
             }
         } catch (e) {
             console.error(e, positionsData);
@@ -171,9 +133,9 @@ export class App extends React.Component<{}, AppState> {
         const data = localStorage.getItem("tablesData");
         try {
             if (data !== null) {
-                this.setState({ tables: JSON.parse(data) as Record<string, TableRows> });
+                this.store.updateTablesData(JSON.parse(data) as Record<string, TableRows>);
             } else {
-                this.setState({ tables: mockedData });
+                this.store.updateTablesData(mockedData);
             }
         } catch (e) {
             console.error(e, data);
@@ -191,7 +153,7 @@ export class App extends React.Component<{}, AppState> {
                 <div className={styles.InputWidget}>
                     <FillingForm onSave={this.addPerson}/>
                 </div>
-                {this.getTableIds().map(tableIndex => (
+                {this.store.getTableIds().map(tableIndex => (
                     <div
                         className={
                             styles.TableWidget +
