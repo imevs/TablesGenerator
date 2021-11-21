@@ -18,12 +18,12 @@ function usePropertyBinding<T extends (number | string | undefined)>(initialValu
     const onFieldChange = useCallback((event) => { setFieldState(event.target.value); }, []);
     const onFieldFocus = useCallback(() => { setPlaceholder(""); }, []);
     const onFieldBlur = useCallback(() => {
-        setPlaceholder(propName + " (is required field)"); }, []);
+        setPlaceholder(propName + " (is required field)"); }, [propName]);
     const [placeholder, setPlaceholder] = useState(propName);
     const resetField = useCallback(() => {
         setPlaceholder(propName);
         setFieldState(initialValue);
-    }, []);
+    }, [propName, initialValue]);
 
     return [fieldState, onFieldChange, resetField, placeholder, onFieldFocus, onFieldBlur];
 }
