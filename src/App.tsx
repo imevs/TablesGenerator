@@ -1,4 +1,5 @@
 import React from "react";
+import { reaction } from "mobx"
 
 import { Person, TableRows } from "./commonTypes";
 import { FillingForm, PopupForm } from "./Form";
@@ -116,9 +117,11 @@ export class App extends React.Component<{}, AppState> {
         document.addEventListener("click", this.handleClickOutsideOfPopup, true);
         document.addEventListener("keyup", this.handleEscape, true);
 
-        this.store.subscribe((data, tablePositions) => {
-            this.updateTablesData(data, tablePositions);
-        });
+        reaction(
+            () => (this.store.tables),
+            (tables) => {
+                this.updateTablesData(tables, this.store.tableIds);
+            });
 
         const positionsData = localStorage.getItem("tablesPositions");
         try {
