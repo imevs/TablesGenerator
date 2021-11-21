@@ -27,7 +27,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
-        run: npm i && npm run build
+        run: PUBLIC_URL=. npm i && npm run build
 
       - name: Deploy to GitHub Pages
         if: success()
