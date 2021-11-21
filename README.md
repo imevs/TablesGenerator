@@ -18,4 +18,4 @@ Removal of table's item does not require confirmation but it is possible to rest
 
 # Demo
 
-https://github.com/imevs/TablesGenerator/raw/main/data/Demo.mov
+https://user-images.githubusercontent.com/1301697/142780604-4cf1103a-7f62-489d-85d4-80a54d52ecdd.mov
