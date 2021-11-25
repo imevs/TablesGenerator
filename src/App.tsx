@@ -1,5 +1,6 @@
 import React from "react";
 import { reaction } from "mobx"
+import { observer } from "mobx-react"
 
 import { Person, TableRows } from "./commonTypes";
 import { FillingForm, PopupForm } from "./Form";
@@ -10,7 +11,6 @@ import { TablesStore } from "./TablesStore";
 import styles from "./App.module.css";
 
 type AppState = {
-    tables: Record<string, TableRows>;
     selectedPerson: Person | undefined;
     selectedTable: string | undefined;
     selectedRow: string | undefined;
@@ -18,10 +18,10 @@ type AppState = {
     removedTable: string | undefined;
 };
 
-export class App extends React.Component<{}, AppState> {
+export const App = observer(
+    class extends React.Component<{}, AppState> {
 
     state: AppState = {
-        tables: {},
         selectedPerson: undefined,
         selectedRow: undefined,
         selectedTable: undefined,
@@ -55,7 +55,7 @@ export class App extends React.Component<{}, AppState> {
 
     public editRow = (tableIndex: string, rowId: string) => {
         this.setState({
-            selectedPerson: this.state.tables[tableIndex][rowId],
+            selectedPerson: this.store.tables[tableIndex][rowId],
             selectedRow: rowId,
             selectedTable: tableIndex,
         });
@@ -87,8 +87,7 @@ export class App extends React.Component<{}, AppState> {
         this.store.addPerson(data);
     }
 
-    public updateTablesData(data: Record<string, TableRows>, tableIds: string[]) {
-        this.setState({ tables: data });
+    public storeTablesData(data: Record<string, TableRows>, tableIds: string[]) {
         localStorage.setItem("tablesData", JSON.stringify(data));
         localStorage.setItem("tablesPositions", JSON.stringify(tableIds));
     }
@@ -120,7 +119,7 @@ export class App extends React.Component<{}, AppState> {
         reaction(
             () => (this.store.tables),
             (tables) => {
-                this.updateTablesData(tables, this.store.tableIds);
+                this.storeTablesData(tables, this.store.tableIds);
             });
 
         const positionsData = localStorage.getItem("tablesPositions");
@@ -168,7 +167,7 @@ export class App extends React.Component<{}, AppState> {
                         <Table
                             activeRecord={tableIndex === this.state.selectedTable ? this.state.selectedRow : undefined}
                             tableIndex={tableIndex}
-                            data={this.state.tables[tableIndex]}
+                            data={this.store.tables[tableIndex]}
                             copyTable={this.copyTable}
                             removeTable={this.removeTable}
                             editRow={this.editRow}
@@ -182,4 +181,4 @@ export class App extends React.Component<{}, AppState> {
             </div>
         );
     }
-}
+});
