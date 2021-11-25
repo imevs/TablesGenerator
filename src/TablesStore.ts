@@ -4,16 +4,18 @@ import { makeAutoObservable } from "mobx"
 
 export class TablesStore {
 
-    public tables: Record<string, TableRows> = {};
-    public tableIds: string[] = [DEFAULT_TABLE_INDEX];
+    private tableData = new Map<string, Map<string, Person>>();
+    public tableIds: string[] = [];
 
     constructor() {
         makeAutoObservable(this);
     }
 
     public copyTable(tableIndex: string) {
-        const data = this.tables[tableIndex];
-        this.tables = { ...this.tables, [this.genTableId(tableIndex)]: data };
+        const data = this.tableData.get(tableIndex);
+        if (data) {
+            this.tableData.set(this.genTableId(tableIndex), data);
+        }
     }
 
     public getUniqueString() {
@@ -28,60 +30,50 @@ export class TablesStore {
     }
 
     public getTableIds() {
-        return this.tableIds.filter(id => this.tables[id] !== undefined);
+        return this.tableIds.filter(id => this.tableData.get(id) !== undefined);
     }
 
     public removeTable(tableIndex: string) {
-        const tables = { ...this.tables };
-        delete tables[tableIndex];
-        this.tables = tables;
+        this.tableData.delete(tableIndex);
     }
 
     public markAsRemovedRow(tableIndex: string, rowId: string) {
-        const tables = this.tables;
-        const infoToUpdate = { ...tables[tableIndex][rowId] };
-        infoToUpdate.isRemoved = true;
-        this.tables = {
-            ...tables, [tableIndex]: { ...tables[tableIndex], [rowId]: infoToUpdate }
-        };
+        this.tableData.get(tableIndex)!.get(rowId)!.isRemoved = true;
     }
 
     public removeRow(tableIndex: string, rowId: string) {
-        const tables = this.tables;
-        const tableToUpdate = { ...tables[tableIndex] };
-        delete tableToUpdate[rowId];
-        this.tables = { ...tables, [tableIndex]: { ...tableToUpdate } };
+        this.tableData.get(tableIndex)!.delete(rowId);
     }
 
     public cancelRemovingRow(tableIndex: string, rowId: string) {
-        const tables = this.tables;
-        const infoToUpdate = { ...tables[tableIndex][rowId] };
-        infoToUpdate.isRemoved = false;
-        this.tables = {
-            ...tables, [tableIndex]: { ...tables[tableIndex], [rowId]: infoToUpdate }
-        };
+        this.tableData.get(tableIndex)!.get(rowId)!.isRemoved = false;
     }
 
     public updatePersonInfo(data: Person, tableIndex: string, rowId: string) {
-        const tables = this.tables;
         if (tableIndex && rowId) {
-            this.tables = {
-                ...tables, [tableIndex]: { ...tables[tableIndex], [rowId]: data }
-            };
+            this.tableData.get(tableIndex)!.set(rowId, data);
         }
     }
 
     public addPerson(data: Person) {
-        const tableIndex = "0";
-        const tables = this.tables;
-        this.tables = {
-            ...tables,
-            [tableIndex]: { ...tables[tableIndex], [this.getUniqueString()]: data }
-        };
+        this.tableData.get(DEFAULT_TABLE_INDEX)!.set(this.getUniqueString(), data);
     }
 
     public updateTablesData(data: Record<string, TableRows>) {
-        this.tables = data;
+        const d: Record<string, Map<string, Person>> = {};
+        for (const k in data) {
+            d[k] = new Map(Object.entries(data[k]));
+        }
+        this.tableData = new Map(Object.entries(d));
+    }
+
+    public get tables(): Record<string, TableRows> {
+        const result = Object.fromEntries(this.tableData);
+        const returnData: Record<string, TableRows> = {};
+        for (const item in result) {
+            returnData[item] = Object.fromEntries(result[item]);
+        }
+        return returnData;
     }
 
 }
