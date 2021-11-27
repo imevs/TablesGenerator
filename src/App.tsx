@@ -18,8 +18,8 @@ type AppState = {
     removedTable: string | undefined;
 };
 
-export const App = observer(
-    class extends React.Component<{}, AppState> {
+@observer
+export class App extends React.Component<{}, AppState> {
 
     state: AppState = {
         selectedPerson: undefined,
@@ -119,26 +119,20 @@ export const App = observer(
         reaction(
             () => (this.store.tables),
             (tables) => {
-                this.storeTablesData(tables, this.store.tableIds);
+                this.storeTablesData(tables, this.store.tablePositions);
             });
 
         const positionsData = localStorage.getItem("tablesPositions");
         try {
-            if (positionsData !== null) {
-                this.store.tableIds = JSON.parse(positionsData) as string[]
-            } else {
-                this.store.tableIds = [...mockedTablesPositions];
-            }
+            this.store.updateTablePositions(
+                positionsData !== null ? JSON.parse(positionsData) as string[] : [...mockedTablesPositions]);
         } catch (e) {
             console.error(e, positionsData);
         }
         const data = localStorage.getItem("tablesData");
         try {
-            if (data !== null) {
-                this.store.updateTablesData(JSON.parse(data) as Record<string, TableRows>);
-            } else {
-                this.store.updateTablesData(mockedData);
-            }
+            this.store.updateTablesData(
+                data !== null ? JSON.parse(data) as Record<string, TableRows> : mockedData);
         } catch (e) {
             console.error(e, data);
         }
@@ -160,7 +154,7 @@ export const App = observer(
                         className={
                             styles.TableWidget +
                             (tableIndex === this.state.removedTable ? " " + styles.RemovedTable : "") +
-                            (tableIndex === this.state.removingTable ? " " + styles.RemovingTable: "")
+                            (tableIndex === this.state.removingTable ? " " + styles.RemovingTable : "")
                         }
                         key={tableIndex}
                     >
@@ -181,4 +175,4 @@ export const App = observer(
             </div>
         );
     }
-});
+}

@@ -27,19 +27,19 @@ describe("App", () => {
         });
 
         it("should load default data", () => {
-            expect(Object.keys(app.state.tables).length).toBe(4);
+            expect(Object.keys(app.store.tables).length).toBe(4);
         });
 
         it("should copy new table", () => {
             app.copyTable(DEFAULT_TABLE_INDEX);
 
-            expect(Object.keys(app.state.tables).length).toBe(5);
+            expect(Object.keys(app.store.tables).length).toBe(5);
         });
 
         it("should add new tableId after current", () => {
             app.store.getUniqueString = () => "111";
             app.store.genTableId("0");
-            expect(app.store.tableIds).toEqual(["0", "111",
+            expect(app.store.tablePositions).toEqual(["0", "111",
                 "1637496942500", "1637496971989", "1637496924975",
             ]);
         });
@@ -52,13 +52,13 @@ describe("App", () => {
             jest.advanceTimersByTime(100);
             jest.advanceTimersByTime(1000);
 
-            expect(Object.keys(app.state.tables).length).toBe(3);
+            expect(Object.keys(app.store.tables).length).toBe(3);
         });
 
         it("should mark item as removed", () => {
             app.removeRow("1637496942500", "0");
 
-            expect(app.state.tables["1637496942500"]["0"].isRemoved).toBe(true);
+            expect(app.store.tables["1637496942500"]["0"].isRemoved).toBe(true);
         });
 
         it("should remove item after 5s", () => {
@@ -66,7 +66,7 @@ describe("App", () => {
 
             app.removeRow("1637496942500", "0");
             jest.advanceTimersByTime(5000);
-            expect(app.state.tables["1637496942500"]["0"]).toBe(undefined);
+            expect(app.store.tables["1637496942500"]["0"]).toBe(undefined);
         });
 
         it("should add new item", () => {
@@ -77,7 +77,7 @@ describe("App", () => {
                 age: 20,
                 city: "London",
             });
-            expect(app.state.tables["0"]["333"].name).toBe("Ivan");
+            expect(app.store.tables["0"]["333"].name).toBe("Ivan");
         });
 
     });
