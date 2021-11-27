@@ -1,4 +1,6 @@
 import React from "react";
+import { reaction } from "mobx"
+import { observer } from "mobx-react"
 
 import { Person, TableRows } from "./commonTypes";
 import { FillingForm, PopupForm } from "./Form";
@@ -9,7 +11,6 @@ import { TablesStore } from "./TablesStore";
 import styles from "./App.module.css";
 
 type AppState = {
-    tables: Record<string, TableRows>;
     selectedPerson: Person | undefined;
     selectedTable: string | undefined;
     selectedRow: string | undefined;
@@ -17,10 +18,10 @@ type AppState = {
     removedTable: string | undefined;
 };
 
+@observer
 export class App extends React.Component<{}, AppState> {
 
     state: AppState = {
-        tables: {},
         selectedPerson: undefined,
         selectedRow: undefined,
         selectedTable: undefined,
@@ -54,7 +55,7 @@ export class App extends React.Component<{}, AppState> {
 
     public editRow = (tableIndex: string, rowId: string) => {
         this.setState({
-            selectedPerson: this.state.tables[tableIndex][rowId],
+            selectedPerson: this.store.tables[tableIndex][rowId],
             selectedRow: rowId,
             selectedTable: tableIndex,
         });
@@ -86,8 +87,7 @@ export class App extends React.Component<{}, AppState> {
         this.store.addPerson(data);
     }
 
-    public updateTablesData(data: Record<string, TableRows>, tableIds: string[]) {
-        this.setState({ tables: data });
+    public storeTablesData(data: Record<string, TableRows>, tableIds: string[]) {
         localStorage.setItem("tablesData", JSON.stringify(data));
         localStorage.setItem("tablesPositions", JSON.stringify(tableIds));
     }
@@ -116,27 +116,23 @@ export class App extends React.Component<{}, AppState> {
         document.addEventListener("click", this.handleClickOutsideOfPopup, true);
         document.addEventListener("keyup", this.handleEscape, true);
 
-        this.store.subscribe((data, tablePositions) => {
-            this.updateTablesData(data, tablePositions);
-        });
+        reaction(
+            () => (this.store.tables),
+            (tables) => {
+                this.storeTablesData(tables, this.store.tablePositions);
+            });
 
         const positionsData = localStorage.getItem("tablesPositions");
         try {
-            if (positionsData !== null) {
-                this.store.tableIds = JSON.parse(positionsData) as string[]
-            } else {
-                this.store.tableIds = [...mockedTablesPositions];
-            }
+            this.store.updateTablePositions(
+                positionsData !== null ? JSON.parse(positionsData) as string[] : [...mockedTablesPositions]);
         } catch (e) {
             console.error(e, positionsData);
         }
         const data = localStorage.getItem("tablesData");
         try {
-            if (data !== null) {
-                this.store.updateTablesData(JSON.parse(data) as Record<string, TableRows>);
-            } else {
-                this.store.updateTablesData(mockedData);
-            }
+            this.store.updateTablesData(
+                data !== null ? JSON.parse(data) as Record<string, TableRows> : mockedData);
         } catch (e) {
             console.error(e, data);
         }
@@ -158,14 +154,14 @@ export class App extends React.Component<{}, AppState> {
                         className={
                             styles.TableWidget +
                             (tableIndex === this.state.removedTable ? " " + styles.RemovedTable : "") +
-                            (tableIndex === this.state.removingTable ? " " + styles.RemovingTable: "")
+                            (tableIndex === this.state.removingTable ? " " + styles.RemovingTable : "")
                         }
                         key={tableIndex}
                     >
                         <Table
                             activeRecord={tableIndex === this.state.selectedTable ? this.state.selectedRow : undefined}
                             tableIndex={tableIndex}
-                            data={this.state.tables[tableIndex]}
+                            data={this.store.tables[tableIndex]}
                             copyTable={this.copyTable}
                             removeTable={this.removeTable}
                             editRow={this.editRow}

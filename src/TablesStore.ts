@@ -1,16 +1,21 @@
 import { Person, TableRows } from "./commonTypes";
 import { DEFAULT_TABLE_INDEX } from "./Table";
+import { makeAutoObservable } from "mobx"
 
 export class TablesStore {
 
-    private tables: Record<string, TableRows> = {};
-    public tableIds: string[] = [DEFAULT_TABLE_INDEX];
+    private tableData: Record<string, Record<string, Person>> = {};
+    private tableIds: string[] = [];
 
-    private subscriber(data: Record<string, TableRows>, tableIds: string[]) {}
+    constructor() {
+        makeAutoObservable(this);
+    }
 
-    public copyTable = (tableIndex: string) => {
-        const data = this.tables[tableIndex];
-        this.updateTablesData({ ...this.tables, [this.genTableId(tableIndex)]: data });
+    public copyTable(tableIndex: string) {
+        const data = this.tableData[tableIndex];
+        if (data) {
+            this.tableData[this.genTableId(tableIndex)] = data;
+        }
     }
 
     public getUniqueString() {
@@ -25,68 +30,53 @@ export class TablesStore {
     }
 
     public getTableIds() {
-        return this.tableIds.filter(id => this.tables[id] !== undefined);
+        return this.tableIds.filter(id => this.tableData[id] !== undefined);
     }
 
-    public removeTable = (tableIndex: string) => {
-        const tables = { ...this.tables };
-        delete tables[tableIndex];
-        this.updateTablesData(tables);
+    public removeTable(tableIndex: string) {
+        delete this.tableData[tableIndex];
     }
 
-    public markAsRemovedRow = (tableIndex: string, rowId: string) => {
-        const tables = this.tables;
-        const infoToUpdate = { ...tables[tableIndex][rowId] };
-        infoToUpdate.isRemoved = true;
-        this.updateTablesData({
-            ...tables, [tableIndex]: { ...tables[tableIndex], [rowId]: infoToUpdate }
-        });
+    public markAsRemovedRow(tableIndex: string, rowId: string) {
+        this.tableData[tableIndex][rowId]!.isRemoved = true;
     }
 
-    public removeRow = (tableIndex: string, rowId: string) => {
-        const tables = this.tables;
-        const tableToUpdate = { ...tables[tableIndex] };
-        delete tableToUpdate[rowId];
-        this.updateTablesData({ ...tables, [tableIndex]: { ...tableToUpdate } });
+    public removeRow(tableIndex: string, rowId: string) {
+        delete this.tableData[tableIndex][rowId];
     }
 
-    public cancelRemovingRow = (tableIndex: string, rowId: string) => {
-        const tables = this.tables;
-        const infoToUpdate = { ...tables[tableIndex][rowId] };
-        infoToUpdate.isRemoved = false;
-        this.updateTablesData({
-            ...tables, [tableIndex]: { ...tables[tableIndex], [rowId]: infoToUpdate }
-        });
+    public cancelRemovingRow(tableIndex: string, rowId: string) {
+        this.tableData[tableIndex][rowId]!.isRemoved = false;
     }
 
-    public updatePersonInfo = (data: Person, tableIndex: string, rowId: string) => {
-        const tables = this.tables;
+    public updatePersonInfo(data: Person, tableIndex: string, rowId: string) {
         if (tableIndex && rowId) {
-            this.updateTablesData({
-                ...tables, [tableIndex]: { ...tables[tableIndex], [rowId]: data }
-            });
+            this.tableData[tableIndex][rowId] = data;
         }
     }
 
-    public addPerson = (data: Person) => {
-        const tableIndex = "0";
-        const tables = this.tables;
-        this.updateTablesData({
-            ...tables,
-            [tableIndex]: { ...tables[tableIndex], [this.getUniqueString()]: data }
-        });
+    public addPerson(data: Person) {
+        this.tableData[DEFAULT_TABLE_INDEX][this.getUniqueString()] = data;
     }
 
     public updateTablesData(data: Record<string, TableRows>) {
-        this.tables = data;
-        this.subscriber(data, this.tableIds);
+        this.tableData = data;
     }
 
-    /**
-     * only one subscriber is supported
-     */
-    public subscribe(callback: (data: Record<string, TableRows>, tablePositions: string[]) => void) {
-        this.subscriber = callback;
+    public updateTablePositions(data: string[]) {
+        this.tableIds = data;
     }
+
+    public get tablePositions() {
+        return this.tableIds;
+    }
+
+    public get tables(): Record<string, TableRows> {
+        const returnData: Record<string, TableRows> = {};
+        for (const item in this.tableData) {
+            returnData[item] = { ...this.tableData[item] };
+        }
+        return returnData;
+    }
+
 }
-
